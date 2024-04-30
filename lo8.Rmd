@@ -57,26 +57,73 @@ diamonds %>%
 ```
 This way it is easier to visualize the difference in the distribution by looking at the last one or two digits specifically.
 
-
 # 7.3.4 Question 3 ---------
 # How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
 
+There are more than 70 times as many 1 carat diamonds as 0.99 carat diamonds.
+```{r}
+diamonds %>%
+  filter(carat >= 0.99, carat <= 1) %>%
+  count(carat)
+```
+Some diamond carat values are being rounded up. I'm assuming there is a premium for a 1carat diamond vs a 0.99 carat diamond beyond the expected increase in price due to a 0.01 carat increase.
 
+If we want to check this, we would have to look at the number of diamonds in each carat range to see if there is a very low number of 0.99 carat diamonds, and a very large number of 1 carat diamonds. 
+
+```{r}
+diamonds %>% 
+  filter(carat >= 0.9, carat <= 1.1) %>%
+  count(carat) %>%
+print(n=Inf)
+```
+As we can see in the data table, there is a very low amount of 0.99 carat diamonds, but an extremely high amount of 1 carat diamonds.
 
 # 7.3.4 Question 4 ---------
 # Compare and contrast coord_cartesian() vs xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
 
+The coord_cartesian() function zooms in on the area specified by the limits after calculating and drawing the geoms. Since the histogram bins have already been calculated, it is not affected.
 
+```{r}
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x=price)) +
+  coord_cartesian(xlim = c(100, 5000), ylim = c(0, 3000))
+```
+But, since the xlim() and ylim() functions influence actions before the calculation of the stats related to the histogram, any values outside the x- and y- limits are dropped before calculating bin widths and counts. This can influence how the histogram looks. 
 
+```{r}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x=price)) + 
+  xlim(100, 5000) + 
+  ylim(0, 3000)
+```
 
 # 7.4.1 Question 1 ---------
 # What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
 
+```{r}
+diamonds %>%
+  ggplot(aes(price)) +
+  geom_histogram(bins = 1000)
+```
+Missing values from a histogram are removed when the number of observations in each bin are calculated. They simply leave a gap in the distribution.
 
+```{r}
+mtcars[1, 2] <- NA
 
-
+mtcars %>%
+  ggplot(aes(cyl)) +
+  geom_bar()
+```
+In the geom_bar() function, NA is treated as another category. It removes the 'NA' from the calculation because the numeric value of the NA observations is unknown. 
 
 # 7.4.1 Question 2 ---------
 # What does na.rm = TRUE do in mean() and sum()?
+
+```{r}
+mean(c(0, 1, 2, NA), na.rm = TRUE)
+sum(c(0, 1, 2, NA), na.rm = TRUE)
+```
+
+It is the option to remove NA values from the vector prior to calculating the mean and sum.
 
 
