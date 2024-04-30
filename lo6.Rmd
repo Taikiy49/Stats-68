@@ -1,0 +1,101 @@
+---
+title: "Lecture Assignment 6"
+author: "Taiki Yamashita"
+date: "2024-04-23"
+output: pdf_document
+---
+
+## 5.2.4 Exercises
+
+```{r}
+# importing libraries...
+library(tidyverse)
+library(nycflights13)
+```
+
+## 1) Find all flights that...
+
+## Had an arrival delay of two or more hours
+```{r}
+# since the arr_delay variable is measured in minutes, we will find flights with an arrival delay of 120 or more minutes. 
+filter(flights, arr_delay >= 120)
+```
+
+## Flew to Houston(IAH or HOU)
+```{r}
+# the flights that flew to Houson are those flights where the destination (dest) is either "IAH" or "HOU" 
+filter(flights, dest %in% c("IAH", "HOU"))
+```
+
+## Were operted by United, American, or Delta
+```{r}
+# using %in% here would make it more compact 
+filter(flights, carrier %in% c("AA", "DL", "UA"))
+```
+
+## Departed in summer (July, August, September)
+```{r}
+# the %in% operator is an alternative. we can use : here to specify the integer range. 
+filter(flights, month %in% 7:9)
+```
+
+## Arrived more than two hours late, but didn't leave late
+```{r}
+# flights that arrived more than 120 minutes late, but didn't leave late, dep_delay which represents departure day.
+filter(flights, arr_delay > 120, dep_delay <= 0)
+```
+
+## Were delayed by at least an hour, but made up over 30 minutes of flight
+```{r}
+filter(flights, dep_delay >= 60, (dep_delay - arr_delay > 30))
+```
+
+## Departed between midnight and 6am (inclusive)
+```{r}
+filter(flights, dep_time >= 2400 | dep_time <= 600)
+```
+
+## 2) Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges. 
+```{r}
+# the expression between(x, left, right) is the same as saying that x >= left & x <= right.
+# therefore, for the question that flights that departed during the summer, it can be rewritten in this format. 
+filter(flights, between(month, 7, 9))
+```
+
+## 3) How many flights have a missing dep_time? What other variables are missing? What might these rows represent?
+```{r}
+filter(flights, is.na(dep_time)) #using the is.na() function will generate me rows of flights with a missing departure time. 
+summary(flights) # the summary() function has the number of missing values for all of the non-character variables.
+```
+
+
+
+## 5.3.1 Exercises
+
+## 1) How could you use arrange() to sort all missing values to the start? (Hint: use is.na()).
+```{r}
+# what the arrange() functions does is it puts NA values last.
+# instead to put th NA first, we can add something that checks if the column is missing a value.
+arrange(flights, desc(is.na(dep_time)), dep_time)
+# since desc(is.na(dep_time)) is TRUE hen dep_time is missing and FALSE when it's not, the rows with the missing values of dep_time will appear first. 
+```
+What we are basically saying is that those which are 'TRUE' to being 'NA', sort them in descending order. 
+
+## 5.4.1 Exercises
+
+## 1) Brainstorm as many ways as possible to select dep_time, dep_delay, arr_time, and arr_delay from flights. 
+```{r}
+vars <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+select(flights, starts_with("dep"), starts_with("arr"))
+select(flights, one_of(vars))
+select_(flights, .dots = vars)
+select_(flights, "dep_time", "dep_delay", "arr_time", "arr_delay")
+select(flights, matches("dep"), matches("arr"), -matches("sched"), -carrier)
+select(flights, contains("dep"), contains("arr"), -contains("sched"), -carrier)
+select(flights, matches("^dep|^arr"))
+select(flights, matches("time$|delay$"), -contains("sched"), -contains("air"))
+select(flights, matches("^dep|arr_delay|time$"))
+
+```
+

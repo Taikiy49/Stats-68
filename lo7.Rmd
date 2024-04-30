@@ -1,0 +1,105 @@
+---
+title: "Lecture Assignment 7"
+author: "Taiki Yamashita"
+date: "2024-04-25"
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(dplyr)
+```
+
+## 5.4 Question 3
+
+```{r}
+# What does the any_of() function do? Why might it be helpful in conjunction with this vector?
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights, any_of(vars))
+```
+The code selects from the 'flights' dataframe where the column names match any of the nmes in the 'vars' vector. It is helpful when you want to select columns dynamically based on a predefined set of column names. Especially when you havee a large dataframe with many columns and you want to select only a subset of columns based on certain criteria, such as a list of variable names, this will be very useful.
+
+## 5.5 Question 1
+```{r}
+# Currently dep_time and sched_dep_time are convenient to look at, but hard to compute with a 
+# because they're not really continuous numbers. Convert them to a more convenient representation
+# of number of minutes since midnight.
+
+hours2mins <- function(x) {
+  x %/% 100 * 60 + x %% 100
+}
+
+# with integer division
+mutate(flights,
+       dep_time = hours2mins(dep_time),
+       sched_dep_time = hours2mins(sched_dep_time))
+```
+Defines a function 'hours2mins()' to convert time values from the HHMM format to minutes since midnight, and then applies this function to transform 'dep_time' and 'sched_dep_time' variables in the 'flights' dataset using 'mutate()'. It simplifies time calculations by converting them into a continuous numerical representation.
+
+
+## 5.5 Question 2
+```{r}
+# Compare air_time with arr_time - dep_time. What do you expect to see? 
+# What do you see? What do you need to do to fix it?
+
+flights_airtime <-
+  mutate(flights,
+    dep_time = (dep_time %/% 100 * 60 + dep_time %% 100) %% 1440,
+    arr_time = (arr_time %/% 100 * 60 + arr_time %% 100) %% 1440,
+    air_time_diff = air_time - arr_time + dep_time
+  )
+
+nrow(filter(flights_airtime, air_time_diff != 0))
+
+```
+What I expect to see that air_time is the difference between the arrival and departure times. In other words, air_time = arr_time - dep_time.
+There should be no flights with non-zero values of arr_time_diff.
+But it turns out that there are many flights for which arr_time != arr_time - dep_time.
+To fix these time-zone issues, I would want to convert all the times to a date-time to handle overnight flights and from local time to a common time zone, most likely to UTC, to handle flights crossing time-zones.
+
+## 5.6 Question 2
+```{r}
+# Come up with another approach that will give you the same output as not_cancelled %>%
+# count(dest) and not_cancelled %>% count(tailnum, wt = distance) (without using count())
+not_cancelled <-
+  flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>%
+  count(dest)
+
+# and
+
+not_cancelled %>%
+  count(tailnum, wt = distance)
+
+# (without using count()).
+
+# we can combine group_by() and summarise() verbs. 
+
+not_cancelled %>%
+  group_by(dest) %>%
+  summarise(n = n())
+
+# and
+
+# similar to earlier, we can replicate count() by combining group_by() and summarise() verbs.
+# this time, instead of using length(), we will use sum() with the weighting variable.
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(n = sum(distance))
+```
+
+
+## 5.7 Question 3
+```{r}
+# What time of day should you fly if you want to avoid delays as much as possible?
+
+flights %>%
+  group_by(hour) %>%
+  summarise(arr_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(arr_delay)
+```
+We can group the hour of the flight. The earlier the flight is scheduled, the lower its expected delay is. Morning flights have fewer previous flights that can delay them.
+

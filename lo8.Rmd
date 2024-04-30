@@ -1,0 +1,82 @@
+---
+title: "Lecture Assignment 8"
+author: "Taiki Yamashita"
+date: "2024-04-29"
+output: pdf_document
+---
+
+```{r, echo = FALSE}
+# importing libraries...
+library("tidyverse")
+library("nycflights13")
+library("ggbeeswarm")
+library("lvplot")
+library("ggstance")
+```
+
+# 7.3.4 Question 1 ---------
+
+# Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+
+```{r}
+# first, we must calculate the summary statistics for these variable and plot their distributions.
+summary(select(diamonds, x, y, z))
+
+# for x
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x=x), binwidth = 0.01)
+
+# for y 
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x=y), binwidth = 0.01)
+
+# for z
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x=z), binwidth = 0.01)
+```
+What we can see after exploring each of the distributions with different variables is that x and y are larger than z, all of the distributions are right skewed, there are outliers for each of the graphs, and they are multimodal.
+
+
+# 7.3.4 Question 2 ---------
+# Explore the distribution of price. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)
+
+```{r}
+ggplot(filter(diamonds, price < 2500), aes(x=price)) + 
+  geom_histogram(binwidth=10, center=0)
+
+ggplot(filter(diamonds), aes(x=price)) + 
+  geom_histogram(binwidth=100, center=0)
+```
+The price data has many spikes, but it is hard to tell what each spike corresponds to. The plots do not show much difference in the distribution in the last one or two digits. There are no diamonds with a price of $1500!
+
+```{r}
+diamonds %>%
+  mutate(ending = price %% 10) %>%
+  ggplot(aes(x=ending)) + 
+  geom_histogram(binwidth=1, center=0)
+```
+This way it is easier to visualize the difference in the distribution by looking at the last one or two digits specifically.
+
+
+# 7.3.4 Question 3 ---------
+# How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
+
+
+
+# 7.3.4 Question 4 ---------
+# Compare and contrast coord_cartesian() vs xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
+
+
+
+
+# 7.4.1 Question 1 ---------
+# What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
+
+
+
+
+
+# 7.4.1 Question 2 ---------
+# What does na.rm = TRUE do in mean() and sum()?
+
+
