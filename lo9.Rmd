@@ -1,0 +1,6 @@
+---
+title: "Lecture Assignment 9"
+author: "Taiki Yamashita"
+date: "2024-05-02"
+output: pdf_document
+---
