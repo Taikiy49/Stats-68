@@ -125,5 +125,3 @@ sum(c(0, 1, 2, NA), na.rm = TRUE)
 ```
 
 It is the option to remove NA values from the vector prior to calculating the mean and sum.
-
-
