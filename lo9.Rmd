@@ -40,7 +40,8 @@ diamonds %>%
   ggplot(mapping = aes(y = color, x = cut)) +
   geom_tile(mapping = aes(fill = n))
 ```
-# 7.5.3.1 2)
+
+# 7.5.3.1 2) 
 # Visualise the distribution of carat, partitioned by price.
 A graph of a box plot with 10 bins an equal number of observations. The width is determined by the number of observations.
 ```{r}
