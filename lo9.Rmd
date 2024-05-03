@@ -44,7 +44,7 @@ diamonds %>%
 # Visualise the distribution of carat, partitioned by price.
 A graph of a box plot with 10 bins an equal number of observations. The width is determined by the number of observations.
 ```{r}
-gglot(diamonds, aes(x = cut_number(price, 10), y = carat)) + 
+ggplot(diamonds, aes(x = cut_number(price, 10), y = carat)) + 
   geom_boxplot() +
   coord_flip() + 
   xlab("Price")
