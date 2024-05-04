@@ -28,6 +28,27 @@ nycflights13::flights %>%
   ggplot() + 
   geom_boxplot(mapping = aes(y = sched_dep_time, x = cancelled))
 ```
+# 7.5.1.1 2)
+# What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+
+Because cut, color, and clarity are ordered categorical variables, I made an assumption that thye could be treated as continuous variables. 
+```{r}
+diamonds %>%
+  mutate(cut = as.numeric(cut),
+         color = as.numeric(color),
+         clarity = as.numeric(clarity)) %>%
+  select(price, everything()) %>%
+  cor()
+```
+carat is the most correlated variable with price, so it is the most important variable in predicting price of diamonds. 
+
+carat and cut are slightly negatively correlated. The diamonds of higher weights tend to have a lower cut rating. 
+We can do...
+```{r}
+ggplot(diamonds) +
+  geom_boxplot(aes(x = cut, y = carat))
+```
+Because better cut has lower carat which makes their price lower, if we don't look at the carat, we can see that cut has lower price. 
 
 # 7.5.2.1 3)
 # Why is it slightly better to use aes(x = color, y = cut) rather than aes(x = cut, y = color) in the example above?
