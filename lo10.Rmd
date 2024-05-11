@@ -1,0 +1,118 @@
+---
+title: "Lecture Assignment 10"
+author: "Taiki Yamashita"
+date: "2024-05-08"
+output: pdf_document
+---
+```{r, echo=FALSE}
+library("tidyverse")
+```
+
+# ----- 10.5 Exercise 1 -----
+# How can you tell if an object is a tibble? (Hint: try printing mtcars, which is a regular data frame).
+When we print mtcars, it prints all of the columns.
+```{r}
+mtcars
+```
+
+When we print mtcars using as_tibble(), it will only print the first 10 observations. It also prints the number of rows and columns and the data type of each column. 
+```{r}
+as_tibble(mtcars)
+```
+
+To check if a data frame is tibble or not, you can use the is_tibble() function.
+```{r}
+is_tibble(mtcars)
+is_tibble(ggplot2::diamonds)
+is_tibble(nycflights13::flights)
+```
+
+Or, you can also run class() to find the class of an object. Data frames that are tibble will have the classes "tbl", "tbl_df", and "data.frame".
+```{r}
+class(mtcars)
+class(ggplot2::diamonds)
+class(nycflights13::flights)
+```
+
+
+# ----- 10.5 Exercise 2 -----
+# Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+```
+With tibble...
+```{r}
+tbl <- as_tibble(df)
+tbl$x
+tbl[, "xyz"]
+tbl[, c("abc", "xyz")]
+```
+What the $ operator will do is it will match any column name that starts with the name following it. Since there is a column named xyz, $x will be expanded to df$xyz.
+This is nice because it will allow you to match with fewer keystrokes, but it can also be dangerous because you can accidentally add other columns that you didn't want to add easily 
+
+With data.frame, with [, the type of the object that is returned differs on the number of columns. If it is one column, it won't return a data.frame. Instead, it will return a vector. With more than one column, it will return a data.frame. This is okay if you understand what you are passing in, but if not, you'd have to write code to account for those situations to avoid any bugs. 
+
+
+# ----- 10.5 Exercise 4 -----
+# Practice referring to non-syntactic names in the following data frame by:
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+```
+
+1) Extracting the variable called 1.
+```{r}
+annoying$`1`
+```
+
+2) Plotting a scatterplot of 1 vs 2.
+```{r}
+ggplot(annoying, aes(`1`, `2`)) +
+  geom_point()
+```
+
+3) Creating a new column called 3 which is 2 divided by 1.
+```{r}
+annoying <-
+  annoying %>%
+  mutate(`3` = `2` / `1`)
+```
+
+4) Renaming the columns to one, two and three.
+```{r}
+annoying %>%
+  rename(one = `1`,
+         two = `2`,
+         three = `3`)
+```
+
+# ----- 10.5 Exercise 5 -----
+# What does tibble::enframe() do? When might you use it?
+What tibble::enframe() does is it turns named vectors or lists to two-column data frames. 
+It is different from as_tibble() for lists because it creates a stacked data frame rather than widy one. It all depends on your data.
+```{r}
+lst <- list(female = 1, male = 2)
+
+as_tibble(lst)
+```
+
+rather than...
+
+```{r}
+enframe(lst) %>% unnest()
+```
+
+# ----- 10.5 Exercise 6 -----
+# What option controls how many additional column names are printed at the footer of a tibble?
+The option that controls how many additional column names are printed at the footer of a tibble is tibble::tibble.width. This option determines the max width of a tibble before it is printed with additional column names shown at the bottom. By default, it is set to 80 characters.
+```{r}
+options(tibble.width = Inf) # this is to prevent additional column names from being printed.
+options(tibble.width = 120) # this is used to set a specific tibble width, in this case 120.
+```
+
+

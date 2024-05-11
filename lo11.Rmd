@@ -1,0 +1,65 @@
+---
+title: "Lecture Assignment 11"
+author: "Taiki Yamashita"
+date: "2024-05-09"
+output: pdf_document
+---
+```{r, echo=FALSE}
+library("tidyverse")
+```
+
+# 11.3.5 1) 
+# What are the most important arguments to locale()?
+The local object has the arguments to set the following...
+data and time formats: data_names, data_format, and time_format
+time zone: tz
+numbers: decimal_mark, grouping_mark
+encoding: encoding
+
+
+# 11.3.5 2)
+# What happens if you try and set decimal_mark and grouping_mark to the same character? What happens to the default value of grouping_mark when you set decimal_mark to “,”? What happens to the default value of decimal_mark when you set the grouping_mark to “.”?
+locale will throw and error if the decimal and grouping marks are set to the same character...
+locale(decimal_mark = ".", grouping_mark = ".") 
+If the decimal_mark is set to the comma " ,", the grouping mark is set to the period "."...
+```{r}
+locale(decimal_mark = ",")
+```
+If the grouping mark is set to a period, the decimal mark is set to a comma...
+```{r}
+locale(grouping_mark = ".")
+```
+
+# 11.3.5 5)
+# What’s the difference between read_csv() and read_csv2()?
+The difference between read_csv() and read_csv2() is the delimiter. The read_csv() uses a comma, while the read_csv2() uses a semi-colon. Using the semi-colon is useful when commas are used as the decimal point. 
+
+
+# 11.3.5 7)
+# Generate the correct format string to parse each of the following dates and times:
+```{r}
+d1 <- "January 1, 2010"
+d2 <- "2015-Mar-07"
+d3 <- "06-Jun-2017"
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+d5 <- "12/30/14" # Dec 30, 2014
+t1 <- "1705"
+t2 <- "11:15:10.12 PM"
+```
+The correct formats are...
+```{r}
+parse_date(d1, "%B %d, %Y")
+parse_date(d2, "%Y-%b-%d")
+parse_date(d3, "%d-%b-%Y")
+parse_date(d4, "%B %d (%Y)")
+parse_date(d5, "%m/%d/%y")
+parse_time(t1, "%H%M")
+```
+time t2 uses real seconds...
+```{r}
+parse_time(t2, "%H:%M:%OS %p")
+```
+
+
+
+
