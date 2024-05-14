@@ -1,0 +1,166 @@
+---
+title: "Lecture Assignment 12"
+author: "Taiki Yamashita"
+date: "2024-05-14"
+output: pdf_document
+---
+
+```{r, echo = FALSE}
+library("tidyverse")
+```
+
+# 12.2.1 Question 1) -----
+# Using prose, describe how the variables and observations are organised in each of the sample tables.
+
+In table1, each row represents a (country, year) combination. The cases and population columns contain the values for those variables. 
+```{r}
+table1
+```
+
+In table2, each row represents a (country, year, variable). The column count contains the values of variables cases and population in separte rows.
+
+```{r}
+table2
+```
+
+In table3, each row represents a (country, year) combination. The column rate gives the values of both cases and population.
+```{r}
+table3
+```
+
+Table 4 has been divided into two separate tables, namely table4a and table4b, each focusing on different variables. Table4a presents the data for cases, while table4b provides information on population. In both tables, countries are listed in rows, years in columns, and the individual cells denote the corresponding values of the variables for each country and year.
+```{r}
+table4a # values of cases
+table4b # values of population
+```
+
+# 12.2.1 Question 2) -----
+# Compute the rate for table2, and table4a + table4b. You will need to perform four operations:
+
+1) Extract the number of TB cases per country per year.
+```{r}
+t2_cases <- filter(table2, type == "cases") %>%
+  rename(cases = count) %>%
+  arrange(country, year)
+```
+
+2) Extract the matching population per country per year.
+```{r}
+t2_population <- filter(table2, type == "population") %>%
+  rename(population = count) %>%
+  arrange(country, year)
+```
+
+3) Divide cases by population, and multiply by 10000 and 4) Store back in the appropriate place.
+
+Now we need to create a new data frame with population and cases column, and then calculate the cases per capita in a new column. 
+```{r}
+t2_cases_per_cap <- tibble(
+  year = t2_cases$year,
+  country = t2_cases$country,
+  cases = t2_cases$cases,
+  population = t2_population$population
+) %>%
+  mutate(cases_per_cap = (cases / population) * 10000) %>%
+  select(country, year, cases_per_cap)
+```
+Now we have to store this new variable in the appropriate location. Therefore, we will add new rows to table2. For table4a and table4b, we will create a new table for cases per capita. We will name it table4c with country rows and year columns. 
+```{r}
+t2_cases_per_cap <- t2_cases_per_cap %>%
+  mutate(type = "cases_per_cap") %>%
+  rename(count = cases_per_cap)
+
+bind_rows(table2, t2_cases_per_cap) %>%
+  arrange(country, year, type, count)
+
+table4c <-
+  tibble(
+    country = table4a$country,
+    `1999` = table4a[["1999"]] / table4b[["1999"]] * 10000,
+    `2000` = table4a[["2000"]] / table4b[["2000"]] * 10000
+  )
+table4c
+```
+
+Which representation is easiest to work with? Which is hardest? Why?
+Table2 isn't the most user-friendly format. Since it lists cases and population separately, we needed to consolidate them into one table to calculate cases per capita. In contrast, table4a and table4b split cases and population, simplifying the calculation, though it required repeating the process for each row.
+
+# 12.3.3 Question 1) -----
+Why are pivot_longer() and pivot_wider() not perfectly symmetrical?
+Carefully consider the following example:
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return) %>% 
+  pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
+```
+The symmetry between `pivot_longer()` and `pivot_wider()` is not perfect due to the loss of column type information when transitioning from wide to long format. With `pivot_longer()`, multiple columns with varying data types are merged into a single column, resulting in the loss of individual data type distinctions. Conversely, `pivot_wider()` derives column names from values within a column, always treating them as character values for `pivot_longer()`. Therefore, if the original variable for column names wasn't of character data type, the round-trip conversion may not accurately recreate the initial dataset.
+
+```{r}
+glimpse(stocks)
+```
+pivot_wider() pivots the table to create a data frame with years as column names and values in return as column values.
+```{r}
+stocks %>%
+  pivot_wider(names_from = year, values_from = return) 
+```
+pivot_longer() unpivots the table, returning it to a tidy data frame with columns for half, year, and return. 
+```{r}
+stocks %>%
+  pivot_wider(names_from = year, values_from = return)%>%
+  pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
+```
+In the new data frame, year has a data type of character than numeric. Instead, we can use the `names_transform` argument to `pivot_longer()`, which provides a function to coerce the column to a different data type. 
+```{r}
+stocks %>%
+  pivot_wider(names_from = year, values_from = return)%>%
+  pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return",
+               names_transform = list(year = as.numeric))
+```
+
+
+# 12.3.3 Question 2) -----
+Why does this code fail?
+
+```{r}
+#table4a %>% 
+#  pivot_longer(c(1999, 2000), names_to = "year", values_to = "cases")
+```
+This code fails because the column names 1999 and 2000 are not non-syntactic variable names. when selecting variables from a data frame, tidyverse functions will interpret numbers like 1999 and 2000 as column numbers. pivot_longer() tries to select the 1999th and 2000th column of the data frame.
+
+Instead we can do this to fix the error...
+```{r}
+table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+```
+
+
+# 12.3.3 Question 3) -----
+What would happen if you widen this table? Why? How could you add a new column to uniquely identify each value?
+
+```{r}
+people <- tribble(
+  ~name,             ~names,  ~values,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+```
+
+Using `pivot_wider()` to widen this data frame results in columns that contain lists of numeric vectors due to the lack of unique row identification by the name and key columns. We could solve this problem by adding a row with a distinct observation count for each combination of name and key.
+```{r}
+people2 <- people %>%
+  group_by(name, names) %>%
+  mutate(obs = row_number())
+people2
+
+pivot_wider(people2, names_from="name", values_from = "values")
+```
